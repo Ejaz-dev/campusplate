@@ -198,7 +198,7 @@ const LandingPage = ({ setActivePortal }) => {
           <div className="flex justify-center items-center space-x-8 opacity-70">
             <div className="flex items-center space-x-2">
               <Award className="w-6 h-6" />
-              <span className="text-sm">UN SDG Impact Award 2024</span>
+              <span className="text-sm">Impact Award 2025</span>
             </div>
             <div className="flex items-center space-x-2">
               <Shield className="w-6 h-6" />
