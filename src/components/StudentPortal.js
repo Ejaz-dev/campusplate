@@ -2,59 +2,184 @@ import React, { useState } from 'react';
 import { Utensils, Heart, Clock, MapPin, ArrowLeft, Search, User, Bell, Star } from 'lucide-react';
 import LocationMap from './LocationMap';
 
+const getWalkingTime = (distance) => {
+  if (distance === "On campus") return "2-5 min walk";
+  const km = parseFloat(distance);
+  if (isNaN(km)) return "5 min walk";
+  return `${Math.ceil(km * 12)} min walk`;
+};
+
+const getUrgencyInfo = (pickupTime) => {
+  const now = new Date();
+  const [startTime] = pickupTime.split(' - ');
+  
+  try {
+    const [time, period] = startTime.trim().split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
+    
+    let pickup24Hour = hours;
+    if (period === 'PM' && hours !== 12) {
+      pickup24Hour = hours + 12;
+    } else if (period === 'AM' && hours === 12) {
+      pickup24Hour = 0;
+    }
+    
+    const pickupDate = new Date();
+    pickupDate.setHours(pickup24Hour, minutes || 0, 0, 0);
+    
+    // If pickup time is in the past, assume it's for today and calculate correctly
+    if (pickupDate < now) {
+      pickupDate.setDate(pickupDate.getDate() + 1);
+    }
+    
+    const diffMinutes = Math.floor((pickupDate - now) / (1000 * 60));
+    
+    // Urgent: less than 45 minutes
+    if (diffMinutes < 45 && diffMinutes > 0) {
+      return {
+        isUrgent: true,
+        message: `⚡ Expires in ${diffMinutes}min!`,
+        bgColor: 'bg-red-50 border-red-200',
+        borderColor: 'border-l-4 border-red-500',
+        textColor: 'text-red-800',
+        sortPriority: 1
+      };
+    } 
+    // Soon: less than 2 hours
+    else if (diffMinutes < 120 && diffMinutes > 0) {
+      return {
+        isUrgent: false,
+        message: `🕐 Pickup soon - ${Math.floor(diffMinutes/60)}h ${diffMinutes%60}min`,
+        bgColor: 'bg-orange-50 border-orange-200',
+        borderColor: 'border-l-4 border-orange-500',
+        textColor: 'text-orange-800',
+        sortPriority: 2
+      };
+    } 
+    // Plenty of time
+    else {
+      return {
+        isUrgent: false,
+        message: '✅ Plenty of time',
+        bgColor: 'bg-green-50 border-green-200',
+        borderColor: 'border-l-4 border-green-500',
+        textColor: 'text-green-800',
+        sortPriority: 3
+      };
+    }
+  } catch (error) {
+    return {
+      isUrgent: false,
+      message: '✅ Plenty of time',
+      bgColor: 'bg-green-50 border-green-200',
+      borderColor: 'border-l-4 border-green-500',
+      textColor: 'text-green-800',
+      sortPriority: 3
+    };
+  }
+};
+
 const StudentPortal = ({ setActivePortal }) => {
+  // Get current time for creating realistic urgent times
+  const now = new Date();
+  const urgentTime1 = new Date(now.getTime() + 25 * 60000); // 25 minutes from now
+  const urgentTime2 = new Date(now.getTime() + 35 * 60000); // 35 minutes from now
+  const soonTime = new Date(now.getTime() + 90 * 60000); // 1.5 hours from now
+  const laterTime = new Date(now.getTime() + 4 * 60 * 60000); // 4 hours from now
+
+  const formatTime = (date) => {
+    const endTime = new Date(date.getTime() + 30 * 60000); // Add 30 minutes for pickup window
+    const formatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+    return `${date.toLocaleTimeString([], formatOptions)} - ${endTime.toLocaleTimeString([], formatOptions)}`;
+  };
+
   const [availableMeals, setAvailableMeals] = useState([
     {
       id: 1,
-      title: "Authentic Chicken Biryani",
-      provider: "MUN Dining - UC Cafeteria",
-      cuisine: "South Asian",
-      quantity: 5,
-      pickupTime: "2:00 PM - 4:00 PM",
-      location: "UC Cafeteria Exit",
-      dietary: ["Halal", "Dairy-Free"],
-      description: "Fragrant basmati rice with spiced chicken, served with raita",
+      title: "Gourmet Pizza Slices",
+      provider: "Tony's Pizza Palace",
+      providerType: "Local Restaurant",
+      cuisine: "Italian",
+      quantity: 8,
+      pickupTime: formatTime(urgentTime1), // URGENT - expires in 25 minutes
+      location: "245 Duckworth Street",
+      dietary: ["Vegetarian Option", "Dairy"],
+      description: "Fresh pizza slices from today's preparation - margherita and pepperoni",
       postedTime: "30 mins ago",
-      rating: 4.8
+      rating: 4.8,
+      distance: "0.8"
     },
     {
       id: 2,
+      title: "Fresh Sushi Rolls",
+      provider: "Sakura Sushi Bar",
+      providerType: "Local Restaurant", 
+      cuisine: "Japanese",
+      quantity: 12,
+      pickupTime: formatTime(soonTime), // Soon but not urgent
+      location: "180 Water Street",
+      dietary: ["Contains Fish", "Gluten-Free"],
+      description: "California rolls and veggie rolls prepared fresh today",
+      postedTime: "45 mins ago",
+      rating: 4.9,
+      distance: "1.2"
+    },
+    {
+      id: 3,
+      title: "Authentic Chicken Biryani",
+      provider: "MUN Dining - UC Cafeteria",
+      providerType: "Campus Dining",
+      cuisine: "South Asian",
+      quantity: 5,
+      pickupTime: formatTime(laterTime), // Plenty of time
+      location: "UC Cafeteria Exit",
+      dietary: ["Halal", "Dairy-Free"],
+      description: "Fragrant basmati rice with spiced chicken, served with raita",
+      postedTime: "1 hour ago",
+      rating: 4.7,
+      distance: "On campus"
+    },
+    {
+      id: 4,
       title: "Mediterranean Mezze Bowl",
       provider: "Campus Corner Deli",
       cuisine: "Mediterranean",
       quantity: 8,
-      pickupTime: "1:30 PM - 3:30 PM",
+      pickupTime: formatTime(urgentTime2), // URGENT - expires in 35 minutes
       location: "Campus Corner - Front Counter",
       dietary: ["Vegetarian", "Vegan"],
       description: "Hummus, falafel, tabbouleh, and fresh vegetables",
       postedTime: "45 mins ago",
-      rating: 4.6
+      rating: 4.6,
+      distance: "On campus"
     },
     {
-      id: 3,
+      id: 5,
       title: "Korean Bulgogi Bowl",
       provider: "Bruneau Centre Kitchen",
       cuisine: "East Asian",
       quantity: 3,
-      pickupTime: "5:00 PM - 7:00 PM",
+      pickupTime: formatTime(laterTime), // Plenty of time
       location: "Bruneau Centre Kitchen",
       dietary: ["Halal", "Gluten-Free"],
       description: "Marinated beef with steamed rice and kimchi",
       postedTime: "1 hour ago",
-      rating: 4.9
+      rating: 4.9,
+      distance: "On campus"
     },
     {
-      id: 4,
+      id: 6,
       title: "Italian Pasta Primavera",
       provider: "Marketplace Café",
       cuisine: "Italian",
       quantity: 6,
-      pickupTime: "3:00 PM - 5:00 PM",
+      pickupTime: formatTime(soonTime), // Soon
       location: "Marketplace - Counter 2",
       dietary: ["Vegetarian"],
       description: "Fresh pasta with seasonal vegetables in herb sauce",
       postedTime: "2 hours ago",
-      rating: 4.7
+      rating: 4.7,
+      distance: "On campus"
     }
   ]);
 
@@ -84,15 +209,22 @@ const StudentPortal = ({ setActivePortal }) => {
     }
   };
 
-  const filteredMeals = availableMeals.filter(meal => {
-    if (meal.quantity === 0) return false;
-    if (selectedFilter !== 'all' && !meal.dietary.some(diet => 
-      diet.toLowerCase().includes(selectedFilter.toLowerCase())
-    )) return false;
-    if (searchTerm && !meal.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !meal.cuisine.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    return true;
-  });
+  // Filter and sort meals (urgent first)
+  const filteredMeals = availableMeals
+    .filter(meal => {
+      if (meal.quantity === 0) return false;
+      if (selectedFilter !== 'all' && !meal.dietary.some(diet => 
+        diet.toLowerCase().includes(selectedFilter.toLowerCase())
+      )) return false;
+      if (searchTerm && !meal.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !meal.cuisine.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const urgencyA = getUrgencyInfo(a.pickupTime);
+      const urgencyB = getUrgencyInfo(b.pickupTime);
+      return urgencyA.sortPriority - urgencyB.sortPriority;
+    });
 
   const filters = [
     { value: 'all', label: 'All Meals', count: availableMeals.filter(m => m.quantity > 0).length, color: 'blue' },
@@ -117,6 +249,7 @@ const StudentPortal = ({ setActivePortal }) => {
       'Mediterranean': 'bg-blue-100 text-blue-800',
       'East Asian': 'bg-red-100 text-red-800',
       'Italian': 'bg-green-100 text-green-800',
+      'Japanese': 'bg-red-100 text-red-800',
       'Mexican': 'bg-yellow-100 text-yellow-800',
       'Middle Eastern': 'bg-purple-100 text-purple-800'
     };
@@ -129,14 +262,20 @@ const StudentPortal = ({ setActivePortal }) => {
       'Vegetarian': 'bg-emerald-100 text-emerald-800',
       'Vegan': 'bg-purple-100 text-purple-800',
       'Gluten-Free': 'bg-blue-100 text-blue-800',
-      'Dairy-Free': 'bg-indigo-100 text-indigo-800'
+      'Dairy-Free': 'bg-indigo-100 text-indigo-800',
+      'Vegetarian Option': 'bg-emerald-100 text-emerald-800',
+      'Contains Fish': 'bg-cyan-100 text-cyan-800',
+      'Dairy': 'bg-yellow-100 text-yellow-800'
     };
     return colors[dietary] || 'bg-gray-100 text-gray-800';
   };
 
+  // Count urgent meals
+  const urgentMealsCount = filteredMeals.filter(meal => getUrgencyInfo(meal.pickupTime).isUrgent).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50">
-      {/* Colorful Professional Header */}
+      {/* Header */}
       <div className="bg-white shadow-lg border-b-4 border-gradient-to-r from-blue-500 to-green-500">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
@@ -182,7 +321,7 @@ const StudentPortal = ({ setActivePortal }) => {
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Colorful Sidebar */}
+          {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Search */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
@@ -202,7 +341,7 @@ const StudentPortal = ({ setActivePortal }) => {
               </div>
             </div>
 
-            {/* Colorful Dietary Filters */}
+            {/* Filters */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500">
               <h3 className="font-bold text-gray-800 mb-4">Dietary Preferences</h3>
               <div className="space-y-3">
@@ -225,7 +364,7 @@ const StudentPortal = ({ setActivePortal }) => {
               </div>
             </div>
 
-            {/* Colorful Claims */}
+            {/* Claims */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
                 <Heart className="mr-2 text-purple-600" />
@@ -266,7 +405,7 @@ const StudentPortal = ({ setActivePortal }) => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Colorful Stats Bar */}
+            {/* Stats Bar */}
             <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl shadow-lg p-6 mb-8 text-white">
               <div className="flex justify-between items-center">
                 <div className="flex space-x-8">
@@ -275,8 +414,8 @@ const StudentPortal = ({ setActivePortal }) => {
                     <div className="text-blue-100 text-sm font-medium">Meals Available</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">🏢 {new Set(filteredMeals.map(m => m.provider)).size}</div>
-                    <div className="text-blue-100 text-sm font-medium">Dining Locations</div>
+                    <div className="text-2xl font-bold text-red-200">⚡ {urgentMealsCount}</div>
+                    <div className="text-blue-100 text-sm font-medium">Urgent Pickups</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold">🎯 {claimedMeals.length}</div>
@@ -290,29 +429,28 @@ const StudentPortal = ({ setActivePortal }) => {
             </div>
 
             {/* Map Section */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <MapPin className="mr-2 text-red-600" />
-                    Campus Meal Locations
-                </h2>
-                <LocationMap 
-                    meals={filteredMeals} 
-                    height="350px"
-                    onLocationSelect={(location) => {
-                    console.log('Selected location:', location);
-                    // You could filter meals by location here
-                    }}
-                />
-                <div className="mt-4 text-sm text-gray-500 text-center">
-                    <span className="inline-flex items-center mr-4">
-                    <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    Has available meals
-                    </span>
-                    <span className="inline-flex items-center">
-                    <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
-                    No meals available
-                    </span>
-                </div>
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <MapPin className="mr-2 text-red-600" />
+                Campus Meal Locations
+              </h2>
+              <LocationMap 
+                meals={filteredMeals} 
+                height="350px"
+                onLocationSelect={(location) => {
+                  console.log('Selected location:', location);
+                }}
+              />
+              <div className="mt-4 text-sm text-gray-500 text-center">
+                <span className="inline-flex items-center mr-4">
+                  <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                  Has available meals
+                </span>
+                <span className="inline-flex items-center">
+                  <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                  No meals available
+                </span>
+              </div>
             </div>
 
             {/* Available Meals */}
@@ -321,6 +459,11 @@ const StudentPortal = ({ setActivePortal }) => {
                 <span className="bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
                   Available Meals
                 </span>
+                {urgentMealsCount > 0 && (
+                  <span className="ml-4 text-sm bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium animate-pulse">
+                    ⚡ {urgentMealsCount} expiring soon
+                  </span>
+                )}
                 {selectedFilter !== 'all' && (
                   <span className="ml-2 text-lg text-blue-600 font-medium">
                     - {filters.find(f => f.value === selectedFilter)?.label}
@@ -336,64 +479,93 @@ const StudentPortal = ({ setActivePortal }) => {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {filteredMeals.map(meal => (
-                    <div key={meal.id} className="border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 transition-all transform hover:scale-105">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-xl font-bold text-gray-800">{meal.title}</h3>
-                            <div className="flex items-center space-x-1">
-                              <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                              <span className="text-sm font-bold text-gray-600">{meal.rating}</span>
+                  {filteredMeals.map(meal => {
+                    const urgencyInfo = getUrgencyInfo(meal.pickupTime);
+                    const walkingTime = getWalkingTime(meal.distance);
+                    
+                    return (
+                      <div 
+                        key={meal.id} 
+                        className={`border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 transition-all transform hover:scale-105 ${urgencyInfo.borderColor}`}
+                      >
+                        {/* Urgency Badge */}
+                        {urgencyInfo.isUrgent && (
+                          <div className={`${urgencyInfo.bgColor} border ${urgencyInfo.textColor} px-3 py-2 rounded-lg mb-4 text-center font-bold text-sm animate-pulse`}>
+                            {urgencyInfo.message}
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="text-xl font-bold text-gray-800">{meal.title}</h3>
+                              <div className="flex items-center space-x-1">
+                                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                <span className="text-sm font-bold text-gray-600">{meal.rating}</span>
+                              </div>
+                            </div>
+                            <p className="text-blue-600 font-bold text-sm mb-2">{meal.provider}</p>
+                            <p className="text-gray-600 mb-3 leading-relaxed">{meal.description}</p>
+                          </div>
+                          <div className="ml-6 text-right">
+                            <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
+                              {meal.quantity} available
+                            </span>
+                            <div className="text-xs text-gray-500 mt-2 font-medium">{meal.postedTime}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {meal.dietary.map(diet => (
+                            <span key={diet} className={`px-3 py-1 rounded-full text-xs font-bold ${getDietaryColor(diet)}`}>
+                              {diet}
+                            </span>
+                          ))}
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getCuisineColor(meal.cuisine)}`}>
+                            {meal.cuisine}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="text-sm text-gray-600 space-y-2 font-medium">
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-2 text-green-600" />
+                              <span>Pickup: {meal.pickupTime}</span>
+                              {!urgencyInfo.isUrgent && (
+                                <span className={`ml-2 text-xs px-2 py-1 rounded-full ${urgencyInfo.bgColor} ${urgencyInfo.textColor}`}>
+                                  {urgencyInfo.message}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-2 text-red-600" />
+                              <span>{meal.location}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-blue-600 mr-1">🚶‍♂️</span>
+                              <span className="text-blue-600 font-semibold">{walkingTime}</span>
+                              <span className="ml-2 text-gray-500">
+                                ({meal.distance === "On campus" ? "On campus" : `${meal.distance} km away`})
+                              </span>
                             </div>
                           </div>
-                          <p className="text-blue-600 font-bold text-sm mb-2">{meal.provider}</p>
-                          <p className="text-gray-600 mb-3 leading-relaxed">{meal.description}</p>
-                        </div>
-                        <div className="ml-6 text-right">
-                          <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
-                            {meal.quantity} available
-                          </span>
-                          <div className="text-xs text-gray-500 mt-2 font-medium">{meal.postedTime}</div>
+                          <button
+                            onClick={() => handleClaimMeal(meal.id)}
+                            disabled={meal.quantity === 0}
+                            className={`px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg ${
+                              meal.quantity > 0
+                                ? urgencyInfo.isUrgent 
+                                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 animate-pulse'
+                                  : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
+                          >
+                            {meal.quantity > 0 ? (urgencyInfo.isUrgent ? '⚡ Claim Now!' : '🎫 Claim Meal') : 'Unavailable'}
+                          </button>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {meal.dietary.map(diet => (
-                          <span key={diet} className={`px-3 py-1 rounded-full text-xs font-bold ${getDietaryColor(diet)}`}>
-                            {diet}
-                          </span>
-                        ))}
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getCuisineColor(meal.cuisine)}`}>
-                          {meal.cuisine}
-                        </span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-600 space-y-2 font-medium">
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-2 text-green-600" />
-                            <span>Pickup: {meal.pickupTime}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                            <span>{meal.location}</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleClaimMeal(meal.id)}
-                          disabled={meal.quantity === 0}
-                          className={`px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg ${
-                            meal.quantity > 0
-                              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
-                        >
-                          {meal.quantity > 0 ? '🎫 Claim Meal' : 'Unavailable'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
