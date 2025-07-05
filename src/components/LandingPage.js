@@ -166,7 +166,7 @@ const LandingPage = ({ setActivePortal }) => {
           <h2 className="text-4xl font-bold mb-12">Access Your Portal</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-8">
             <button
-              onClick={() => setActivePortal('student')}
+              onClick={() => setActivePortal('student-login')}
               className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105"
             >
               <div className="flex items-center justify-center space-x-4">
@@ -179,7 +179,7 @@ const LandingPage = ({ setActivePortal }) => {
             </button>
             
             <button
-              onClick={() => setActivePortal('provider')}
+              onClick={() => setActivePortal('provider-login')}
               className="group bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
             >
               <div className="flex items-center justify-center space-x-4">
