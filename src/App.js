@@ -1,23 +1,26 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import LandingPage from './components/LandingPage';
+import StudentPortal from './components/StudentPortal';
+import ProviderPortal from './components/ProviderPortal';
 import './App.css';
 
 function App() {
+  const [activePortal, setActivePortal] = useState('landing');
+
+  const renderPortal = () => {
+    switch (activePortal) {
+      case 'student':
+        return <StudentPortal setActivePortal={setActivePortal} />;
+      case 'provider':
+        return <ProviderPortal setActivePortal={setActivePortal} />;
+      default:
+        return <LandingPage setActivePortal={setActivePortal} />;
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {renderPortal()}
     </div>
   );
 }
