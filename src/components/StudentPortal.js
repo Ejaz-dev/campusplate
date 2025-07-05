@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Utensils, Heart, Clock, MapPin, ArrowLeft, Search, User, Bell, Star } from 'lucide-react';
+import { Utensils, Heart, Clock, MapPin, ArrowLeft, Search, User, Bell, Star, X, AlertTriangle } from 'lucide-react';
 import LocationMap from './LocationMap';
 
 const getWalkingTime = (distance) => {
@@ -27,14 +27,12 @@ const getUrgencyInfo = (pickupTime) => {
     const pickupDate = new Date();
     pickupDate.setHours(pickup24Hour, minutes || 0, 0, 0);
     
-    // If pickup time is in the past, assume it's for today and calculate correctly
     if (pickupDate < now) {
       pickupDate.setDate(pickupDate.getDate() + 1);
     }
     
     const diffMinutes = Math.floor((pickupDate - now) / (1000 * 60));
     
-    // Urgent: less than 45 minutes
     if (diffMinutes < 45 && diffMinutes > 0) {
       return {
         isUrgent: true,
@@ -45,7 +43,6 @@ const getUrgencyInfo = (pickupTime) => {
         sortPriority: 1
       };
     } 
-    // Soon: less than 2 hours
     else if (diffMinutes < 120 && diffMinutes > 0) {
       return {
         isUrgent: false,
@@ -56,7 +53,6 @@ const getUrgencyInfo = (pickupTime) => {
         sortPriority: 2
       };
     } 
-    // Plenty of time
     else {
       return {
         isUrgent: false,
@@ -79,16 +75,36 @@ const getUrgencyInfo = (pickupTime) => {
   }
 };
 
+// Helper function to get the start of the current week (Monday)
+const getWeekStart = (date = new Date()) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  const monday = new Date(d.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+};
+
+// Helper function to check if a date is in the current week
+const isInCurrentWeek = (date) => {
+  const weekStart = getWeekStart();
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  
+  const checkDate = new Date(date);
+  return checkDate >= weekStart && checkDate < weekEnd;
+};
+
 const StudentPortal = ({ setActivePortal }) => {
   // Get current time for creating realistic urgent times
   const now = new Date();
-  const urgentTime1 = new Date(now.getTime() + 25 * 60000); // 25 minutes from now
-  const urgentTime2 = new Date(now.getTime() + 35 * 60000); // 35 minutes from now
-  const soonTime = new Date(now.getTime() + 90 * 60000); // 1.5 hours from now
-  const laterTime = new Date(now.getTime() + 4 * 60 * 60000); // 4 hours from now
+  const urgentTime1 = new Date(now.getTime() + 25 * 60000);
+  const urgentTime2 = new Date(now.getTime() + 35 * 60000);
+  const soonTime = new Date(now.getTime() + 90 * 60000);
+  const laterTime = new Date(now.getTime() + 4 * 60 * 60000);
 
   const formatTime = (date) => {
-    const endTime = new Date(date.getTime() + 30 * 60000); // Add 30 minutes for pickup window
+    const endTime = new Date(date.getTime() + 30 * 60000);
     const formatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
     return `${date.toLocaleTimeString([], formatOptions)} - ${endTime.toLocaleTimeString([], formatOptions)}`;
   };
@@ -101,7 +117,7 @@ const StudentPortal = ({ setActivePortal }) => {
       providerType: "Local Restaurant",
       cuisine: "Italian",
       quantity: 8,
-      pickupTime: formatTime(urgentTime1), // URGENT - expires in 25 minutes
+      pickupTime: formatTime(urgentTime1),
       location: "245 Duckworth Street",
       dietary: ["Vegetarian Option", "Dairy"],
       description: "Fresh pizza slices from today's preparation - margherita and pepperoni",
@@ -116,7 +132,7 @@ const StudentPortal = ({ setActivePortal }) => {
       providerType: "Local Restaurant", 
       cuisine: "Japanese",
       quantity: 12,
-      pickupTime: formatTime(soonTime), // Soon but not urgent
+      pickupTime: formatTime(soonTime),
       location: "180 Water Street",
       dietary: ["Contains Fish", "Gluten-Free"],
       description: "California rolls and veggie rolls prepared fresh today",
@@ -131,7 +147,7 @@ const StudentPortal = ({ setActivePortal }) => {
       providerType: "Campus Dining",
       cuisine: "South Asian",
       quantity: 5,
-      pickupTime: formatTime(laterTime), // Plenty of time
+      pickupTime: formatTime(laterTime),
       location: "UC Cafeteria Exit",
       dietary: ["Halal", "Dairy-Free"],
       description: "Fragrant basmati rice with spiced chicken, served with raita",
@@ -145,7 +161,7 @@ const StudentPortal = ({ setActivePortal }) => {
       provider: "Campus Corner Deli",
       cuisine: "Mediterranean",
       quantity: 8,
-      pickupTime: formatTime(urgentTime2), // URGENT - expires in 35 minutes
+      pickupTime: formatTime(urgentTime2),
       location: "Campus Corner - Front Counter",
       dietary: ["Vegetarian", "Vegan"],
       description: "Hummus, falafel, tabbouleh, and fresh vegetables",
@@ -159,7 +175,7 @@ const StudentPortal = ({ setActivePortal }) => {
       provider: "Bruneau Centre Kitchen",
       cuisine: "East Asian",
       quantity: 3,
-      pickupTime: formatTime(laterTime), // Plenty of time
+      pickupTime: formatTime(laterTime),
       location: "Bruneau Centre Kitchen",
       dietary: ["Halal", "Gluten-Free"],
       description: "Marinated beef with steamed rice and kimchi",
@@ -173,7 +189,7 @@ const StudentPortal = ({ setActivePortal }) => {
       provider: "Marketplace Café",
       cuisine: "Italian",
       quantity: 6,
-      pickupTime: formatTime(soonTime), // Soon
+      pickupTime: formatTime(soonTime),
       location: "Marketplace - Counter 2",
       dietary: ["Vegetarian"],
       description: "Fresh pasta with seasonal vegetables in herb sauce",
@@ -183,7 +199,9 @@ const StudentPortal = ({ setActivePortal }) => {
     }
   ]);
 
+  // Enhanced claimed meals state with claim dates
   const [claimedMeals, setClaimedMeals] = useState([]);
+
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -194,13 +212,28 @@ const StudentPortal = ({ setActivePortal }) => {
     year: "3rd Year"
   };
 
+  // Calculate weekly claims
+  const currentWeekClaims = claimedMeals.filter(meal => 
+    isInCurrentWeek(meal.claimedDate)
+  ).length;
+  
+  const maxWeeklyClaims = 2;
+  const canClaimMore = currentWeekClaims < maxWeeklyClaims;
+
   const handleClaimMeal = (mealId) => {
+    if (!canClaimMore) {
+      alert(`⚠️ Weekly limit reached! You can only claim ${maxWeeklyClaims} meals per week. Your limit resets every Monday.`);
+      return;
+    }
+
     const meal = availableMeals.find(m => m.id === mealId);
     if (meal && meal.quantity > 0) {
       const claimedMeal = {
         ...meal,
         claimCode: `CP-${Date.now().toString().slice(-6)}`,
-        claimedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        claimedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        claimedDate: new Date(),
+        status: 'active'
       };
       setClaimedMeals([claimedMeal, ...claimedMeals]);
       setAvailableMeals(availableMeals.map(m => 
@@ -208,6 +241,20 @@ const StudentPortal = ({ setActivePortal }) => {
       ));
     }
   };
+
+  const handleRemoveClaim = (claimCode) => {
+    const claimedMeal = claimedMeals.find(m => m.claimCode === claimCode);
+    if (claimedMeal && claimedMeal.status === 'active') {
+      // Remove from claimed meals completely (not just change status)
+      setClaimedMeals(claimedMeals.filter(m => m.claimCode !== claimCode));
+      
+      // Add quantity back to available meals
+      setAvailableMeals(availableMeals.map(m => 
+        m.id === claimedMeal.id ? { ...m, quantity: m.quantity + 1 } : m
+      ));
+    }
+  };
+
 
   // Filter and sort meals (urgent first)
   const filteredMeals = availableMeals
@@ -272,6 +319,7 @@ const StudentPortal = ({ setActivePortal }) => {
 
   // Count urgent meals
   const urgentMealsCount = filteredMeals.filter(meal => getUrgencyInfo(meal.pickupTime).isUrgent).length;
+  const activeClaims = claimedMeals.filter(m => m.status === 'active');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50">
@@ -323,6 +371,35 @@ const StudentPortal = ({ setActivePortal }) => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Weekly Limit Status */}
+            <div className={`rounded-2xl shadow-lg p-6 border-l-4 ${
+              canClaimMore ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+            }`}>
+              <h3 className={`font-bold mb-4 flex items-center ${
+                canClaimMore ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {canClaimMore ? <Heart className="mr-2 text-green-600" /> : <AlertTriangle className="mr-2 text-red-600" />}
+                Weekly Claims
+              </h3>
+              <div className="text-center">
+                <div className={`text-3xl font-bold mb-2 ${
+                  canClaimMore ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {currentWeekClaims} / {maxWeeklyClaims}
+                </div>
+                <div className={`text-sm font-medium mb-3 ${
+                  canClaimMore ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {canClaimMore ? `${maxWeeklyClaims - currentWeekClaims} claims remaining` : 'Weekly limit reached'}
+                </div>
+                {!canClaimMore && (
+                  <div className="text-xs text-red-600 bg-red-100 rounded-lg p-2 font-medium">
+                    Limit resets every Monday
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Search */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
@@ -364,13 +441,13 @@ const StudentPortal = ({ setActivePortal }) => {
               </div>
             </div>
 
-            {/* Claims */}
+            {/* Enhanced Claims Section */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
                 <Heart className="mr-2 text-purple-600" />
-                Active Claims ({claimedMeals.length})
+                Active Claims ({activeClaims.length})
               </h3>
-              {claimedMeals.length === 0 ? (
+              {activeClaims.length === 0 ? (
                 <div className="text-center py-6">
                   <div className="text-6xl mb-3">🍽️</div>
                   <p className="text-gray-500 text-sm font-medium">No active claims</p>
@@ -378,9 +455,18 @@ const StudentPortal = ({ setActivePortal }) => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {claimedMeals.map(meal => (
+                  {activeClaims.map(meal => (
                     <div key={meal.claimCode} className="border-2 border-green-200 rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm">
-                      <h4 className="font-bold text-sm text-gray-800 mb-1">{meal.title}</h4>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-sm text-gray-800">{meal.title}</h4>
+                        <button
+                          onClick={() => handleRemoveClaim(meal.claimCode)}
+                          className="bg-red-100 hover:bg-red-200 text-red-600 p-1 rounded-full transition-colors group"
+                          title="Cancel claim"
+                        >
+                          <X className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        </button>
+                      </div>
                       <p className="text-xs text-gray-600 mb-3">{meal.provider}</p>
                       <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-300 rounded-lg p-3 mb-3">
                         <p className="text-xs text-green-800 font-bold">🎫 Claim Code: {meal.claimCode}</p>
@@ -396,6 +482,9 @@ const StudentPortal = ({ setActivePortal }) => {
                         </div>
                         <div className="text-purple-600">Claimed: {meal.claimedAt}</div>
                       </div>
+                      <div className="mt-3 text-xs text-green-700 bg-green-100 rounded-lg p-2 font-medium">
+                        💡 Show this code when picking up your meal
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -405,7 +494,7 @@ const StudentPortal = ({ setActivePortal }) => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Stats Bar */}
+            {/* Enhanced Stats Bar */}
             <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl shadow-lg p-6 mb-8 text-white">
               <div className="flex justify-between items-center">
                 <div className="flex space-x-8">
@@ -418,8 +507,14 @@ const StudentPortal = ({ setActivePortal }) => {
                     <div className="text-blue-100 text-sm font-medium">Urgent Pickups</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold">🎯 {claimedMeals.length}</div>
-                    <div className="text-blue-100 text-sm font-medium">Claimed Today</div>
+                    <div className="text-2xl font-bold">🎯 {activeClaims.length}</div>
+                    <div className="text-blue-100 text-sm font-medium">Active Claims</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${canClaimMore ? 'text-green-200' : 'text-red-200'}`}>
+                      {canClaimMore ? '✅' : '⚠️'} {maxWeeklyClaims - currentWeekClaims}
+                    </div>
+                    <div className="text-blue-100 text-sm font-medium">Claims Remaining</div>
                   </div>
                 </div>
                 <div className="text-blue-100 text-sm font-medium">
@@ -551,24 +646,93 @@ const StudentPortal = ({ setActivePortal }) => {
                           </div>
                           <button
                             onClick={() => handleClaimMeal(meal.id)}
-                            disabled={meal.quantity === 0}
+                            disabled={meal.quantity === 0 || !canClaimMore}
                             className={`px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg ${
-                              meal.quantity > 0
+                              meal.quantity > 0 && canClaimMore
                                 ? urgencyInfo.isUrgent 
                                   ? 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 animate-pulse'
                                   : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                           >
-                            {meal.quantity > 0 ? (urgencyInfo.isUrgent ? '⚡ Claim Now!' : '🎫 Claim Meal') : 'Unavailable'}
+                            {meal.quantity === 0 
+                              ? 'Unavailable' 
+                              : !canClaimMore 
+                                ? 'Weekly Limit Reached'
+                                : urgencyInfo.isUrgent 
+                                  ? '⚡ Claim Now!' 
+                                  : '🎫 Claim Meal'
+                            }
                           </button>
                         </div>
+
+                        {/* Weekly Limit Warning */}
+                        {!canClaimMore && (
+                          <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-xl">
+                            <div className="flex items-center space-x-2">
+                              <AlertTriangle className="w-5 h-5 text-red-600" />
+                              <span className="text-red-800 font-bold text-sm">
+                                Weekly claim limit reached ({currentWeekClaims}/{maxWeeklyClaims})
+                              </span>
+                            </div>
+                            <div className="mt-2 text-xs text-red-700 font-medium">
+                              Your limit resets every Monday. Cancel an existing claim to free up a slot.
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Enhanced Footer with Weekly Limit Info */}
+        <div className="mt-12 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 rounded-2xl shadow-xl p-8 text-white text-center">
+          <h2 className="text-3xl font-bold mb-4">🎓 Student Success & Sustainability</h2>
+          <p className="text-blue-100 mb-6 text-lg font-medium">
+            Making nutritious meals accessible while reducing food waste on campus
+          </p>
+          
+          {/* Weekly Limit Explanation */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-6">
+            <h3 className="text-xl font-bold mb-3">📋 How Claims Work</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl mb-2">🎯</div>
+                <div className="font-bold">Weekly Limit</div>
+                <div className="text-blue-200">2 meals per student per week</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl mb-2">🔄</div>
+                <div className="font-bold">Reset Schedule</div>
+                <div className="text-blue-200">Every Monday at midnight</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="text-2xl mb-2">❌</div>
+                <div className="font-bold">Cancel Anytime</div>
+                <div className="text-blue-200">Free up slots for other meals</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Impact Stats */}
+          <div className="flex justify-center items-center space-x-8 opacity-90">
+            <div className="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full">
+              <span className="text-sm font-bold">🌱 Sustainable Dining</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full">
+              <span className="text-sm font-bold">🤝 Community Support</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full">
+              <span className="text-sm font-bold">💪 Student Success</span>
+            </div>
+          </div>
+          
+          <div className="mt-6 text-sm text-green-200 font-medium">
+            Proudly serving Memorial University students • Making every meal count
           </div>
         </div>
       </div>
