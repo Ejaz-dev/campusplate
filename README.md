@@ -173,7 +173,7 @@ Restart the development server
   
 **📱 Scan to try CampusPlate instantly:**
 
-<img src="![CamplusPlate qr code](![CamplusPlate qr code](https://github.com/user-attachments/assets/f5b7cd13-7862-4b6c-a66a-95ad6c683f3d)
+<img src="![CamplusPlate qr code](![CamplusPlate qr code](qr code.jpg)
 )
 " alt="Live Demo QR Code" width="180">
 
