@@ -169,17 +169,8 @@ Restart the development server
 
 ## 🌐 Live Demo - No Installation Required
 
-<div align="center">
-  
-**📱 Scan to try CampusPlate instantly:**
+**https://campusplate.vercel.app/**
 
-<img src="![CamplusPlate qr code](![CamplusPlate qr code](qr code.jpg)
-)
-" alt="Live Demo QR Code" width="180">
-
-</div>
-
----
   
 ---
 ## 🙏 Acknowledgments
