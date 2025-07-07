@@ -1,70 +1,200 @@
-# Getting Started with Create React App
+🍽️ CampusPlate
+Smart Food Rescue Platform for Universities
+Connecting surplus campus meals with students in need - turning waste into opportunity
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+🎯 Overview
+CampusPlate is a revolutionary food rescue platform designed specifically for university campuses. We tackle two critical issues simultaneously: campus food waste and student food insecurity. By creating a real-time marketplace that connects surplus meals from dining services with students, we're building a more sustainable and equitable campus community.
+Built for Memorial University of Newfoundland, CampusPlate demonstrates how technology can drive positive social and environmental impact.
 
-## Available Scripts
+🔍 Problem Statement
 
-In the project directory, you can run:
+Universities waste 22 million pounds of food annually in North America
+1 in 4 university students experience food insecurity
+Campus dining services lose thousands of dollars in disposal costs
+Students struggle with rising food costs while quality meals go to waste
 
-### `npm start`
+At Memorial University specifically:
+Large student population with diverse dietary needs
+Multiple campus dining locations generating daily surplus
+Strong sustainability goals and student wellness initiatives
+Perfect environment for a campus-wide food rescue solution
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+💡 Solution
+CampusPlate creates a seamless two-sided marketplace:
+For Food Providers 🏪
 
-### `npm test`
+Real-time meal posting with smart analytics dashboard
+Impact tracking - meals rescued, waste reduced, students helped
+Simple claim management with automated notifications
+Sustainability reporting for university compliance
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+For Students 🎓
 
-### `npm run build`
+Instant meal discovery with dietary filtering (Halal, Vegetarian, Vegan, etc.)
+Interactive campus map showing pickup locations and walking times
+Smart urgency alerts for time-sensitive meals
+Fair weekly limits ensuring equitable access for all students
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+✨ Features
+🚀 Core Functionality
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Real-time meal posting and claiming
+Interactive Google Maps integration with campus locations
+Smart urgency system (meals expire in 25-45 minutes get priority)
+Weekly claim limits (2 meals per student per week) for fair distribution
+Advanced filtering by cuisine, dietary restrictions, and location
+One-click claim management with unique claim codes
 
-### `npm run eject`
+🎨 User Experience
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Dual portal system - separate interfaces for students and providers
+Professional authentication with demo accounts for testing
+Responsive design - works seamlessly on mobile, tablet, and desktop
+Real-time synchronization between provider and student portals
+Beautiful, modern UI with accessibility considerations
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+📊 Analytics & Impact
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Live statistics dashboard showing meals rescued and students helped
+Provider analytics with success rates and impact metrics
+Sustainability tracking for university reporting
+User engagement metrics and meal popularity insights
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+🛠️ Tech Stack
+Frontend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+React 19.1.0 - Modern component-based architecture
+JavaScript (ES6+) - Core programming language
+Tailwind CSS 3.4.0 - Utility-first styling framework
+Lucide React - Consistent icon system
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+APIs & Services
 
-### Code Splitting
+Google Maps JavaScript API - Interactive mapping and location services
+@googlemaps/js-api-loader - Dynamic map loading
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Development Tools
 
-### Analyzing the Bundle Size
+Create React App - Build tooling and development environment
+Node.js & npm - Package management
+PostCSS & Autoprefixer - CSS processing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Architecture
 
-### Making a Progressive Web App
+Single Page Application (SPA) - Fast, responsive user experience
+Component-based design - Modular and maintainable code
+Responsive design patterns - Mobile-first approach
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
+🚀 Installation
+Prerequisites
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Node.js (v14 or higher)
+npm or yarn
+Git
 
-### Deployment
+Setup
+bash# Clone the repository
+git clone https://github.com/yourusername/campusplate.git
+cd campusplate
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+# Install dependencies
+npm install
 
-### `npm run build` fails to minify
+# Start the development server
+npm start
+The application will open in your browser at http://localhost:3000
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Optional: Google Maps Setup
+Get a Google Maps API key from Google Cloud Console
+Create a .env file in the root directory:
+REACT_APP_GOOGLE_MAPS_API_KEY=your_api_key_here
+
+Restart the development server
+
+
+🖥️ Usage
+Getting Started
+
+Landing Page - Overview of platform and impact statistics
+Choose Portal - Student or Provider login
+Demo Login - Use provided demo accounts for testing
+
+Student Workflow
+
+Login with student credentials
+Browse available meals with real-time updates
+Filter by dietary preferences (Halal, Vegetarian, etc.)
+View locations on campus map
+Claim meals with one-click (subject to weekly limits)
+Manage active claims with ability to cancel
+
+Provider Workflow
+
+Login with provider credentials
+Post surplus meals with details and pickup information
+Track meal performance with views and claims
+Monitor impact analytics - students helped, waste reduced
+Manage active listings with real-time updates
+
+
+🎭 Demo Accounts
+Student Accounts
+Email: ejaz.khan@mun.ca | Password: demo123
+Email: sarah.johnson@mun.ca | Password: demo123
+Quick Demo: demo / demo
+
+Provider Accounts
+Username: mun.dining | Password: provider123
+Username: campus.corner | Password: provider123
+Quick Demo: demo / demo
+
+
+📸 Screenshots
+![alt text](Homepage.jpg)
+Beautiful hero section with live impact statistics
+
+![alt text](<Student Portal.jpg>)
+Student Portal
+
+![alt text](<Provider Portal.jpg>)
+Provider Portal
+
+
+👥 Team
+🧑‍💻 Ejaz Khan - Lead Developer & Technical Architect
+
+Role: Full-stack development, UI/UX design, technical implementation
+Contributions: React application architecture, Google Maps integration, responsive design, state management, user authentication system
+Contact: ([LinkedIn](https://www.linkedin.com/in/ejaz-dev/))
+
+🧠 Musayed - Business Strategy & Research Lead
+
+Role: Market research, business model development, problem validation
+Contributions: Identified target market needs, developed business case, researched university food waste statistics, created go-to-market strategy
+Contact: LinkedIn
+
+👨‍💻 Farhan - Development Support
+
+Role: Frontend development assistance, code review
+Contributions: Component development, debugging, UI improvements, testing
+Contact: GitHub | LinkedIn
+
+
+🌟 Key Achievements
+
+✅ Full-featured MVP built in hackathon timeframe
+✅ Real-time synchronization between provider and student portals
+✅ Professional authentication system with demo capabilities
+✅ Advanced claim management with weekly limits and fairness controls
+✅ Google Maps integration showing actual MUN campus locations
+✅ Responsive design working across all device types
+✅ Scalable architecture ready for production deployment
+
+
+🙏 Acknowledgments
+
+All NL Eats hackathon organizers for creating opportunities to build impactful solutions.
